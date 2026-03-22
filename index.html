@@ -1,0 +1,591 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saha — Data Scientist Portfolio</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;500;600;700;800&family=Epilogue:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1DB954;
+    --green-bright: #1ed760;
+    --green-dim: rgba(29,185,84,0.15);
+    --bg: #121212;
+    --bg-elevated: #1a1a1a;
+    --bg-card: #242424;
+    --bg-card-hover: #2c2c2c;
+    --text: #FFFFFF;
+    --text-secondary: #b3b3b3;
+    --text-muted: #535353;
+    --sidebar: 260px;
+    --player-h: 88px;
+    --radius: 8px;
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+  body { background: var(--bg); color: var(--text); font-family: 'Epilogue', sans-serif; display: grid; grid-template-columns: var(--sidebar) 1fr; grid-template-rows: 1fr var(--player-h); height: 100vh; overflow: hidden; }
+  ::-webkit-scrollbar { width: 6px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.18); border-radius: 3px; }
+  ::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.3); }
+
+  /* SIDEBAR */
+  .sidebar { background: #000; display: flex; flex-direction: column; padding: 20px 8px; gap: 8px; overflow-y: auto; }
+  .logo { padding: 4px 12px 18px; display: flex; align-items: center; gap: 10px; }
+  .logo-icon { width: 30px; height: 30px; fill: var(--green); }
+  .logo-text { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 1rem; letter-spacing: -0.5px; }
+  .nav-box { background: var(--bg-elevated); border-radius: var(--radius); padding: 6px; }
+  .nav-item { display: flex; align-items: center; gap: 14px; padding: 9px 12px; border-radius: 6px; cursor: pointer; color: var(--text-secondary); font-size: 0.85rem; font-weight: 500; text-decoration: none; transition: all 0.15s; }
+  .nav-item:hover { color: var(--text); background: rgba(255,255,255,0.07); }
+  .nav-item.active { color: var(--text); }
+  .nav-item.active .nav-icon { fill: var(--green); }
+  .nav-icon { width: 20px; height: 20px; fill: currentColor; flex-shrink: 0; }
+  .lib-box { background: var(--bg-elevated); border-radius: var(--radius); padding: 6px; flex: 1; overflow-y: auto; }
+  .lib-label { padding: 10px 12px 6px; font-size: 0.7rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); }
+  .lib-item { display: flex; align-items: center; gap: 12px; padding: 8px 12px; border-radius: 6px; cursor: pointer; transition: background 0.15s; }
+  .lib-item:hover { background: rgba(255,255,255,0.07); }
+  .lib-thumb { width: 40px; height: 40px; border-radius: 5px; display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+  .lib-info { min-width: 0; }
+  .lib-name { font-size: 0.82rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .lib-sub { font-size: 0.72rem; color: var(--text-secondary); margin-top: 1px; }
+
+  /* MAIN */
+  .main { overflow-y: auto; position: relative; }
+
+  /* TOPBAR */
+  .topbar { position: sticky; top: 0; z-index: 50; background: rgba(18,18,18,0.9); backdrop-filter: blur(24px); padding: 14px 28px; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); transition: background 0.2s; }
+  .topbar.scrolled { background: rgba(18,18,18,0.98); }
+  .tb-nav { display: flex; gap: 6px; }
+  .tb-btn { width: 30px; height: 30px; border-radius: 50%; background: rgba(0,0,0,0.6); border: none; color: var(--text); cursor: pointer; display: flex; align-items: center; justify-content: center; transition: background 0.15s; }
+  .tb-btn:hover { background: rgba(255,255,255,0.1); }
+  .tb-actions { display: flex; gap: 10px; align-items: center; }
+  .pill { padding: 7px 18px; border-radius: 30px; border: none; font-family: 'Epilogue', sans-serif; font-weight: 600; font-size: 0.82rem; cursor: pointer; transition: all 0.15s; text-decoration: none; display: inline-flex; align-items: center; }
+  .pill-ghost { background: transparent; color: var(--text); border: 1px solid rgba(255,255,255,0.25); }
+  .pill-ghost:hover { border-color: #fff; }
+  .pill-green { background: var(--green); color: #000; }
+  .pill-green:hover { background: var(--green-bright); transform: scale(1.03); }
+
+  /* HERO */
+  .hero { position: relative; min-height: 360px; display: flex; align-items: flex-end; padding: 36px 32px 28px; overflow: hidden; }
+  .hero-bg { position: absolute; inset: 0; background: linear-gradient(135deg, #0a2e15 0%, #0e3d1e 25%, #082a1a 50%, #061a10 75%, #121212 100%); }
+  .hero-grid { position: absolute; inset: 0; background-image: linear-gradient(rgba(29,185,84,0.04) 1px, transparent 1px), linear-gradient(90deg, rgba(29,185,84,0.04) 1px, transparent 1px); background-size: 40px 40px; }
+  .hero-glow { position: absolute; width: 500px; height: 500px; border-radius: 50%; background: radial-gradient(circle, rgba(29,185,84,0.12) 0%, transparent 70%); top: -120px; right: -80px; pointer-events: none; }
+  .hero-fade { position: absolute; inset: 0; background: linear-gradient(to bottom, transparent 30%, #121212 100%); }
+  .hero-content { position: relative; z-index: 1; }
+  .verified { display: inline-flex; align-items: center; gap: 6px; font-size: 0.78rem; font-weight: 600; color: #93c5fd; margin-bottom: 10px; }
+  .verified svg { width: 16px; height: 16px; fill: #60a5fa; }
+  .hero-name { font-family: 'Syne', sans-serif; font-size: clamp(1.8rem, 3vw, 2.8rem); font-weight: 800; line-height: 0.95; letter-spacing: -3px; margin-bottom: 6px; }
+  .hero-name .green { color: var(--green); }
+  .hero-title { font-size: 1rem; color: var(--text-secondary); margin-bottom: 8px; font-weight: 400; letter-spacing: 0.02em; }
+  .hero-meta { display: flex; align-items: center; gap: 16px; font-size: 0.82rem; color: var(--text-secondary); }
+  .hero-meta strong { color: var(--text); }
+  .hero-dot { width: 3px; height: 3px; border-radius: 50%; background: var(--text-muted); }
+
+  /* CONTROLS */
+  .controls { display: flex; align-items: center; gap: 20px; padding: 20px 32px 28px; }
+  .play-big { width: 54px; height: 54px; border-radius: 50%; background: var(--green); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; box-shadow: 0 8px 28px rgba(29,185,84,0.35); transition: all 0.15s; flex-shrink: 0; }
+  .play-big:hover { background: var(--green-bright); transform: scale(1.06); }
+  .play-big svg { width: 20px; height: 20px; fill: #000; margin-left: 3px; }
+  .ctrl-btn { display: inline-flex; align-items: center; gap: 7px; background: none; border: 1px solid rgba(255,255,255,0.15); color: var(--text-secondary); padding: 7px 16px; border-radius: 30px; font-family: 'Epilogue', sans-serif; font-size: 0.82rem; font-weight: 500; cursor: pointer; transition: all 0.15s; }
+  .ctrl-btn:hover { color: var(--text); border-color: rgba(255,255,255,0.4); }
+  .ctrl-btn svg { width: 14px; height: 14px; fill: currentColor; }
+
+  /* SECTION */
+  .section { padding: 0 32px 36px; }
+  .sec-header { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 20px; }
+  .sec-title { font-family: 'Syne', sans-serif; font-size: 1.4rem; font-weight: 700; }
+  .see-all { font-size: 0.72rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-secondary); cursor: pointer; transition: color 0.15s; }
+  .see-all:hover { color: var(--text); }
+  .divider { height: 1px; background: rgba(255,255,255,0.06); margin: 0 32px 32px; }
+
+  /* TRACK LIST — fixed grid, no wrapping */
+  .track-header { display: grid; grid-template-columns: 32px 1fr 120px 160px; gap: 12px; padding: 0 16px 8px; border-bottom: 1px solid rgba(255,255,255,0.07); margin-bottom: 4px; }
+  .track-header span { font-size: 0.72rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; color: var(--text-muted); }
+  .track-header span:last-child { text-align: right; }
+
+  .track { display: grid; grid-template-columns: 32px 1fr 120px 160px; gap: 12px; align-items: center; padding: 8px 16px; border-radius: 6px; cursor: pointer; transition: background 0.15s; position: relative; }
+  .track:hover { background: rgba(255,255,255,0.07); }
+  .track:hover .t-num { display: none; }
+  .track:hover .t-play { display: flex; }
+  .track:hover .t-desc { opacity: 1; transform: translateY(0); }
+
+  .t-num { font-size: 0.88rem; color: var(--text-secondary); text-align: center; }
+  .t-play { display: none; align-items: center; justify-content: center; }
+  .t-play svg { width: 14px; height: 14px; fill: var(--text); }
+
+  .t-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .t-thumb { width: 42px; height: 42px; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-size: 1.1rem; flex-shrink: 0; }
+  .t-text { min-width: 0; flex: 1; }
+  .t-name { font-size: 0.88rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .t-sub { font-size: 0.77rem; color: var(--text-secondary); margin-top: 2px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+
+  /* TOOLTIP — slides in from the right on hover */
+  .t-desc {
+    display: none;
+    position: absolute;
+    right: 0; top: 50%;
+    transform: translateY(-50%);
+    background: #2a2a2a;
+    border: 1px solid rgba(255,255,255,0.12);
+    border-radius: 10px;
+    padding: 12px 16px;
+    font-size: 0.8rem;
+    color: var(--text-secondary);
+    line-height: 1.6;
+    width: 280px;
+    z-index: 999;
+    pointer-events: none;
+    box-shadow: 0 8px 28px rgba(0,0,0,0.6);
+    white-space: normal;
+  }
+  .t-desc strong { color: var(--text); display: block; margin-bottom: 4px; }
+  .track:hover .t-desc { display: block; }
+
+  .t-badge { font-size: 0.68rem; font-weight: 700; padding: 3px 9px; border-radius: 30px; white-space: nowrap; background: var(--green-dim); color: var(--green); }
+  .t-badge.gray { background: rgba(255,255,255,0.06); color: var(--text-secondary); }
+  .t-dur { font-size: 0.82rem; color: var(--text-secondary); text-align: right; white-space: nowrap; }
+  .track.now .t-name { color: var(--green); }
+  .track.now .t-num { color: var(--green); }
+
+  /* PROJECT CARDS */
+  .cards { display: grid; grid-template-columns: repeat(auto-fill, minmax(175px, 1fr)); gap: 14px; }
+  .card { background: var(--bg-card); border-radius: 10px; padding: 14px; cursor: pointer; position: relative; transition: background 0.2s; }
+  .card:hover { background: var(--bg-card-hover); }
+  .card:hover .card-play { opacity: 1; transform: translateY(0); }
+  .card-img { width: 100%; aspect-ratio: 1; border-radius: 6px; margin-bottom: 12px; display: flex; align-items: center; justify-content: center; font-size: 2.2rem; position: relative; overflow: hidden; }
+  .card-bars { position: absolute; bottom: 0; left: 0; right: 0; display: flex; align-items: flex-end; gap: 3px; padding: 0 8px 6px; height: 50%; opacity: 0.3; }
+  .card-bar { flex: 1; border-radius: 2px 2px 0 0; background: var(--green); min-height: 4px; }
+  .card-play { position: absolute; bottom: 10px; right: 10px; width: 40px; height: 40px; border-radius: 50%; background: var(--green); border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; opacity: 0; transform: translateY(8px); transition: all 0.2s; box-shadow: 0 4px 14px rgba(0,0,0,0.5); }
+  .card-play svg { width: 16px; height: 16px; fill: #000; margin-left: 2px; }
+  .card-title { font-size: 0.88rem; font-weight: 600; margin-bottom: 4px; }
+  .card-desc { font-size: 0.77rem; color: var(--text-secondary); line-height: 1.5; }
+  .card-tags { display: flex; flex-wrap: wrap; gap: 4px; margin-top: 8px; }
+  .tag { font-size: 0.65rem; font-weight: 600; padding: 2px 7px; border-radius: 30px; background: rgba(29,185,84,0.1); color: var(--green); border: 1px solid rgba(29,185,84,0.2); }
+
+  /* SKILLS */
+  .skills-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .skill-box { background: var(--bg-card); border-radius: 10px; padding: 20px; position: relative; overflow: hidden; }
+  .skill-box::before { content: ''; position: absolute; top: 0; left: 0; right: 0; height: 2px; background: linear-gradient(90deg, var(--green), transparent); }
+  .skill-box-title { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 14px; }
+  .skill-pills { display: flex; flex-wrap: wrap; gap: 7px; }
+  .spill { padding: 5px 13px; border-radius: 30px; background: rgba(255,255,255,0.07); font-size: 0.78rem; font-weight: 500; border: 1px solid rgba(255,255,255,0.07); transition: all 0.15s; cursor: default; }
+  .spill:hover { background: var(--green-dim); border-color: rgba(29,185,84,0.3); color: var(--green); }
+
+  /* ABOUT */
+  .about-grid { display: grid; grid-template-columns: 3fr 2fr; gap: 14px; }
+  .about-card { background: var(--bg-card); border-radius: 10px; padding: 24px; position: relative; overflow: hidden; }
+  .about-card::after { content: ''; position: absolute; bottom: 0; right: 0; width: 120px; height: 120px; background: radial-gradient(circle at bottom right, rgba(29,185,84,0.08), transparent 70%); }
+  .acard-label { font-size: 0.68rem; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--text-muted); margin-bottom: 12px; }
+  .acard-body { font-size: 0.88rem; line-height: 1.75; color: var(--text-secondary); }
+  .acard-body strong { color: var(--text); }
+  .stats-row { display: flex; gap: 24px; margin-top: 18px; }
+  .stat-n { font-family: 'Syne', sans-serif; font-size: 2rem; font-weight: 800; color: var(--green); line-height: 1; }
+  .stat-l { font-size: 0.72rem; color: var(--text-secondary); margin-top: 3px; }
+  .hobby-item { display: flex; align-items: center; gap: 12px; background: rgba(255,255,255,0.04); border-radius: 8px; padding: 10px 14px; border: 1px solid rgba(255,255,255,0.06); font-size: 0.84rem; transition: background 0.15s; cursor: default; }
+  .hobby-item:hover { background: rgba(29,185,84,0.07); border-color: rgba(29,185,84,0.2); }
+  .hobby-icon { font-size: 1.1rem; flex-shrink: 0; }
+  .hobby-name { font-weight: 500; }
+  .hobby-sub { font-size: 0.75rem; color: var(--text-secondary); }
+
+  /* PLAYER */
+  .player { grid-column: 1 / -1; background: #181818; border-top: 1px solid rgba(255,255,255,0.08); display: grid; grid-template-columns: 1fr 2fr 1fr; align-items: center; padding: 0 20px; gap: 12px; z-index: 200; }
+  .pl-info { display: flex; align-items: center; gap: 12px; min-width: 0; }
+  .pl-thumb { width: 52px; height: 52px; border-radius: 4px; background: linear-gradient(135deg, #0e3d1e, #1DB954); display: flex; align-items: center; justify-content: center; font-size: 1.3rem; flex-shrink: 0; }
+  .pl-track { min-width: 0; }
+  .pl-title { font-size: 0.84rem; font-weight: 500; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .pl-artist { font-size: 0.75rem; color: var(--text-secondary); margin-top: 1px; }
+  .pl-heart { background: none; border: none; color: var(--green); cursor: pointer; padding: 4px; flex-shrink: 0; }
+  .pl-heart svg { width: 16px; height: 16px; fill: currentColor; }
+  .pl-controls { display: flex; flex-direction: column; align-items: center; gap: 6px; }
+  .pl-btns { display: flex; align-items: center; gap: 18px; }
+  .pl-btn { background: none; border: none; color: var(--text-secondary); cursor: pointer; display: flex; transition: color 0.15s; }
+  .pl-btn:hover { color: var(--text); }
+  .pl-btn svg { width: 16px; height: 16px; fill: currentColor; }
+  .pl-play { width: 32px; height: 32px; border-radius: 50%; background: #fff; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: transform 0.15s; }
+  .pl-play:hover { transform: scale(1.08); }
+  .pl-play svg { width: 14px; height: 14px; fill: #000; margin-left: 2px; }
+  .pl-bar { display: flex; align-items: center; gap: 8px; width: 100%; max-width: 480px; }
+  .pl-time { font-size: 0.68rem; color: var(--text-secondary); min-width: 30px; }
+  .pl-time:last-child { text-align: right; }
+  .pl-track-bar { flex: 1; height: 3px; background: rgba(255,255,255,0.15); border-radius: 2px; cursor: pointer; position: relative; }
+  .pl-fill { width: 22%; height: 100%; background: var(--text); border-radius: 2px; transition: background 0.15s; }
+  .pl-track-bar:hover .pl-fill { background: var(--green); }
+  .pl-dot { position: absolute; top: 50%; left: 22%; transform: translate(-50%, -50%); width: 11px; height: 11px; border-radius: 50%; background: #fff; opacity: 0; transition: opacity 0.15s; }
+  .pl-track-bar:hover .pl-dot { opacity: 1; }
+  .pl-extra { display: flex; align-items: center; gap: 10px; justify-content: flex-end; }
+  .vol { display: flex; align-items: center; gap: 7px; }
+  .vol-bar { width: 72px; height: 3px; background: rgba(255,255,255,0.15); border-radius: 2px; cursor: pointer; }
+  .vol-fill { width: 65%; height: 100%; background: var(--text); border-radius: 2px; }
+  .vol-bar:hover .vol-fill { background: var(--green); }
+
+  /* SEARCH OVERLAY */
+  #searchOverlay { display: none; position: fixed; inset: 0; z-index: 500; background: rgba(0,0,0,0.7); backdrop-filter: blur(8px); align-items: flex-start; justify-content: center; padding-top: 80px; }
+  #searchOverlay.open { display: flex; }
+  .sr-item { display: flex; align-items: center; gap: 14px; padding: 10px 14px; border-radius: 8px; cursor: pointer; transition: background 0.15s; }
+  .sr-item:hover { background: rgba(255,255,255,0.08); }
+  .sr-thumb { width: 44px; height: 44px; border-radius: 6px; background: rgba(255,255,255,0.07); display: flex; align-items: center; justify-content: center; font-size: 1.2rem; flex-shrink: 0; }
+  .sr-name { font-size: 0.9rem; font-weight: 500; color: #fff; }
+  .sr-sub { font-size: 0.77rem; color: #b3b3b3; margin-top: 2px; }
+
+  /* ANIMATIONS */
+  @keyframes fadeUp { from { opacity:0; transform:translateY(18px); } to { opacity:1; transform:translateY(0); } }
+  .hero-content { animation: fadeUp 0.55s ease both; }
+  .controls { animation: fadeUp 0.55s 0.1s ease both; }
+</style>
+</head>
+<body>
+
+<aside class="sidebar">
+  <div class="logo">
+    <svg class="logo-icon" viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+    <span class="logo-text">saha's portfolio</span>
+  </div>
+  <div class="nav-box">
+    <a class="nav-item active" href="#" onclick="goTo('hero'); return false;">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M12.5 3.247a1 1 0 0 0-1 0L4 7.577V20h4.5v-6a1 1 0 0 1 1-1h5a1 1 0 0 1 1 1v6H20V7.577l-7.5-4.33zm-2-1.732a3 3 0 0 1 3 0l7.5 4.33a2 2 0 0 1 1 1.732V21a1 1 0 0 1-1 1H14a1 1 0 0 1-1-1v-6h-2v6a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V7.577a2 2 0 0 1 1-1.732l7.5-4.33z"/></svg>
+      Home
+    </a>
+    <a class="nav-item" href="#" onclick="openSearch(); return false;">
+      <svg class="nav-icon" viewBox="0 0 24 24"><path d="M10.533 1.279c-5.18 0-9.407 4.14-9.407 9.279s4.226 9.279 9.407 9.279c2.234 0 4.29-.77 5.907-2.058l4.353 4.353a1 1 0 1 0 1.414-1.414l-4.344-4.344a9.157 9.157 0 0 0 2.077-5.816c0-5.14-4.226-9.28-9.407-9.28zm-7.407 9.279c0-4.006 3.302-7.279 7.407-7.279s7.407 3.273 7.407 7.279-3.302 7.279-7.407 7.279-7.407-3.273-7.407-7.279z"/></svg>
+      Search
+    </a>
+  </div>
+  <div class="lib-box">
+    <div class="lib-label">Your Library</div>
+    <div class="lib-item" onclick="goTo('work')"><div class="lib-thumb" style="background:linear-gradient(135deg,#082a1a,#0e4a2a)">💼</div><div class="lib-info"><div class="lib-name">Work Experience</div><div class="lib-sub">Playlist · Saha</div></div></div>
+    <div class="lib-item" onclick="goTo('projects')"><div class="lib-thumb" style="background:linear-gradient(135deg,#0d1f40,#1a3a6e)">📊</div><div class="lib-info"><div class="lib-name">Projects</div><div class="lib-sub">Album · 2024</div></div></div>
+    <div class="lib-item" onclick="goTo('education')"><div class="lib-thumb" style="background:linear-gradient(135deg,#2a0d3a,#4a1a5c)">🎓</div><div class="lib-info"><div class="lib-name">Education</div><div class="lib-sub">Album · Comp & Math</div></div></div>
+    <div class="lib-item" onclick="goTo('skills')"><div class="lib-thumb" style="background:linear-gradient(135deg,#1a2a0d,#2e4a14)">⚡</div><div class="lib-info"><div class="lib-name">Skills</div><div class="lib-sub">Playlist · Top picks</div></div></div>
+    <div class="lib-item" onclick="goTo('hobbies')"><div class="lib-thumb" style="background:linear-gradient(135deg,#2a1a0d,#4a2e0d)">🎯</div><div class="lib-info"><div class="lib-name">Hobbies & More</div><div class="lib-sub">Playlist · Extracurriculars</div></div></div>
+    <div class="lib-item" onclick="goTo('about')"><div class="lib-thumb" style="background:linear-gradient(135deg,#1a0d2a,#2e1a40)">👤</div><div class="lib-info"><div class="lib-name">About Saha</div><div class="lib-sub">Artist · Bio</div></div></div>
+  </div>
+</aside>
+
+<main class="main" id="mainScroll">
+  <div class="topbar" id="topbar">
+    <div class="tb-nav">
+      <button class="tb-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M15.957 2.793a1 1 0 0 1 0 1.414L8.164 12l7.793 7.793a1 1 0 1 1-1.414 1.414L5.336 12l9.207-9.207a1 1 0 0 1 1.414 0z"/></svg></button>
+      <button class="tb-btn"><svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M8.043 2.793a1 1 0 0 1 1.414 0L18.664 12l-9.207 9.207a1 1 0 1 1-1.414-1.414L15.836 12 8.043 5.207a1 1 0 0 1 0-1.414z"/></svg></button>
+    </div>
+    <div class="tb-actions">
+      <a href="mailto:sahasrig2005@gmail.com" class="pill pill-ghost">Email Me</a>
+      <a href="https://github.com/saha433" target="_blank" class="pill pill-ghost">GitHub</a>
+      <a href="https://www.linkedin.com/in/sahasri-gundapuneedi" target="_blank" class="pill pill-green">LinkedIn ↗</a>
+    </div>
+  </div>
+
+  <div class="hero" id="hero">
+    <div class="hero-bg"></div><div class="hero-grid"></div><div class="hero-glow"></div><div class="hero-fade"></div>
+    <div class="hero-content">
+      <div class="verified"><svg viewBox="0 0 24 24"><path d="M10.757 12.041l-2.344-2.344a1 1 0 0 0-1.414 1.414l3.05 3.05a1 1 0 0 0 1.414 0l5.765-5.765a1 1 0 1 0-1.414-1.414l-5.057 5.059zM12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0z"/></svg>Aspiring Data Scientist</div>
+      <div class="hero-name">Sahasri<br><span class="green">Gundapuneedi</span></div>
+      <div class="hero-title">Computation & Mathematics Student</div>
+      <div class="hero-meta"><span>Open to opportunities</span><div class="hero-dot"></div><span>Hyderabad, India</span></div>
+    </div>
+  </div>
+
+  <div class="controls">
+    <button class="play-big"><svg viewBox="0 0 24 24"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg></button>
+    <button class="ctrl-btn" onclick="window.open('https://open.spotify.com/user/31bii3doexrxlcrrb3ktx6w5gntu?si=7ff3f92de97e4812','_blank')">
+      <svg viewBox="0 0 24 24"><path d="M4.995 21.857a1 1 0 0 1-1-1V3.143a1 1 0 0 1 1.5-.866l15.01 8.857a1 1 0 0 1 0 1.732L5.495 21.723a1 1 0 0 1-.5.134zm1-16.951v14.188l12.013-7.094L5.995 4.906z"/></svg>Follow
+    </button>
+    <button class="ctrl-btn" onclick="goTo('projects')">
+      <svg viewBox="0 0 24 24"><path d="M13.5 1.5C13.5.672 12.828 0 12 0S10.5.672 10.5 1.5v9.068L6.874 6.942a1.5 1.5 0 1 0-2.247 1.986l6.879 7.797a1.5 1.5 0 0 0 2.248-.001l6.879-7.797a1.5 1.5 0 1 0-2.248-1.986L13.5 10.57V1.5z"/></svg>View Projects
+    </button>
+    <div style="position:relative;">
+      <button class="ctrl-btn" onclick="toggleDropdown()" id="dotsBtn">···</button>
+      <div id="dotsDropdown" style="
+        display:none; position:absolute; top:calc(100% + 8px); left:0;
+        background:#2a2a2a; border:1px solid rgba(255,255,255,0.12);
+        border-radius:8px; overflow:hidden; min-width:180px;
+        box-shadow:0 8px 28px rgba(0,0,0,0.6); z-index:300;
+      ">
+        <!-- EDIT: replace # with your actual resume and portfolio links -->
+        <a href="https://drive.google.com/file/d/140BszHd1-8ljMFjIflES0YXnG-FJMg2R/view?usp=sharing" target="_blank" onclick="closeDropdown()" style="display:flex;align-items:center;gap:10px;padding:11px 16px;color:#fff;text-decoration:none;font-size:0.84rem;font-family:'Epilogue',sans-serif;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zm-1 1.5L18.5 9H13V3.5zM6 20V4h5v7h7v9H6z"/></svg>
+          View Resume
+        </a>
+        <div style="height:1px;background:rgba(255,255,255,0.07);"></div>
+        <a href="https://www.figma.com/design/d5qlc6KyWjfOoKGHdjuCM4/saha-s-portfolio?node-id=0-1&t=yVpjLHy2oxtQPkl5-1" target="_blank" onclick="closeDropdown()" style="display:flex;align-items:center;gap:10px;padding:11px 16px;color:#fff;text-decoration:none;font-size:0.84rem;font-family:'Epilogue',sans-serif;transition:background 0.15s;" onmouseover="this.style.background='rgba(255,255,255,0.08)'" onmouseout="this.style.background='transparent'">
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+          View Portfolio
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- WORK EXPERIENCE -->
+  <div class="section" id="work">
+    <div class="sec-header"><div class="sec-title">Work Experience</div><div class="see-all">See all</div></div>
+    <div class="track-header"><span>#</span><span>Role</span><span>Type</span><span>Duration</span></div>
+
+    <!-- EDIT: update t-desc with your actual description of what you did -->
+    <div class="track now">
+      <div class="t-num" style="color:var(--green)">▶</div>
+      <div class="t-info">
+        <div class="t-thumb" style="background:linear-gradient(135deg,#082a1a,#1DB954)">📊</div>
+        <div class="t-text">
+          <div class="t-name">Data and Business Analytics Intern</div>
+          <div class="t-sub">Royal Enfield</div>
+        </div>
+      </div>
+      <div><span class="t-badge">Internship</span></div>
+      <div class="t-dur">June – Aug 2025</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- PROJECTS -->
+  <div class="section" id="projects">
+    <div class="sec-header"><div class="sec-title">Projects</div><div class="see-all">See all</div></div>
+    <div class="cards">
+      
+        <div class="card" onclick="window.open('https://net-aoah-flix.netlify.app', '_blank')">
+        <div class="card-img" style="background:none;">
+  <img src="images/1.png" style="width:100%;height:100%;object-fit:cover;border-radius:6px;"></div>
+<button class="card-play"><svg viewBox="0 0 24 24"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg></button>
+        <div class="card-title">The Anatomy of a Hit</div>
+        <div class="card-desc">An interactive data visualization project analyzing Netflix content to uncover patterns in genres, release trends, and audience preferences.</div>
+        <div class="card-tags"><span class="tag">Python</span><span class="tag">HTML</span><span class="tag">D3.js</span></div>
+      </div>
+      
+      <div class="card" onclick="window.open('https://github.com/saha433/chronos', '_blank')">
+        <div class="card-img" style="background:none;">
+  <img src="images/2.png" style="width:100%;height:100%;object-fit:cover;border-radius:6px;"></div>
+<button class="card-play"><svg viewBox="0 0 24 24"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg></button>
+       <div class="card-title">Chronos</div>
+        <div class="card-desc">An AI-driven application that translates slang and unclear text into meaningful English and provides contextual insights.</div>
+        <div class="card-tags"><span class="tag">Python</span><span class="tag">HTML</span></div>
+      </div>
+      
+      <div class="card" onclick="window.open('https://github.com/saha433/web3-build-a-thon', '_blank')">
+        <div class="card-img" style="background:none;">
+  <img src="images/3.png" style="width:100%;height:100%;object-fit:cover;border-radius:6px;"></div>
+<button class="card-play"><svg viewBox="0 0 24 24"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg></button>
+        <div class="card-title">Decentralized Peer-to-Peer Lending</div>
+        <div class="card-desc">A blockchain-based peer-to-peer lending and borrowing system that eliminates the need for intermediaries.</div>
+        <div class="card-tags"><span class="tag">Solidity</span><span class="tag">Web3.js</span><span class="tag">Metamask</span><span class="tag">HTML</span><span class="tag">CSS</span><span class="tag">JavaScript</span></div>
+      </div>
+     
+      <div class="card">
+        <div class="card-img" style="background:linear-gradient(135deg,#1a0d2a,#2e1a40)">🤖<div class="card-bars"><div class="card-bar" style="height:75%"></div><div class="card-bar" style="height:50%"></div><div class="card-bar" style="height:90%"></div><div class="card-bar" style="height:65%"></div><div class="card-bar" style="height:45%"></div><div class="card-bar" style="height:85%"></div></div></div>
+        <button class="card-play"><svg viewBox="0 0 24 24"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg></button>
+        <div class="card-title">Project Name Here</div>
+        <div class="card-desc">Short description of what this project does and what problem it solves.</div>
+        <div class="card-tags"><span class="tag">Statistics</span><span class="tag">Python</span></div>
+      </div>
+      
+      <div class="card">
+        <div class="card-img" style="background:linear-gradient(135deg,#0d2a0d,#1a4a1a)">🗂️<div class="card-bars"><div class="card-bar" style="height:45%"></div><div class="card-bar" style="height:85%"></div><div class="card-bar" style="height:60%"></div><div class="card-bar" style="height:40%"></div><div class="card-bar" style="height:75%"></div><div class="card-bar" style="height:55%"></div></div></div>
+        <button class="card-play"><svg viewBox="0 0 24 24"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg></button>
+        <div class="card-title">Project Name Here</div>
+        <div class="card-desc">Short description of what this project does and what problem it solves.</div>
+        <div class="card-tags"><span class="tag">SQL</span><span class="tag">Excel</span></div>
+      </div>
+         <div class="card">
+        <div class="card-img" style="background:linear-gradient(135deg,#0d2a0d,#1a4a1a)">🗂️<div class="card-bars"><div class="card-bar" style="height:45%"></div><div class="card-bar" style="height:85%"></div><div class="card-bar" style="height:60%"></div><div class="card-bar" style="height:40%"></div><div class="card-bar" style="height:75%"></div><div class="card-bar" style="height:55%"></div></div></div>
+        <button class="card-play"><svg viewBox="0 0 24 24"><path d="M7.05 3.606l13.49 7.788a.7.7 0 0 1 0 1.212L7.05 20.394A.7.7 0 0 1 6 19.788V4.212a.7.7 0 0 1 1.05-.606z"/></svg></button>
+        <div class="card-title">Project Name Here</div>
+        <div class="card-desc">Short description of what this project does and what problem it solves.</div>
+        <div class="card-tags"><span class="tag">SQL</span><span class="tag">Excel</span></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- EDUCATION -->
+  <div class="section" id="education">
+    <div class="sec-header"><div class="sec-title">Education</div></div>
+    <div class="track-header"><span>#</span><span>Degree</span><span>Type</span><span>Year</span></div>
+
+    <div class="track now">
+      <div class="t-num" style="color:var(--green)">▶</div>
+      <div class="t-info">
+        <div class="t-thumb" style="background:linear-gradient(135deg,#2a0d3a,#1DB954,#0d3a1a)">🎓</div>
+        <div class="t-text"><div class="t-name">Computation & Mathematics</div><div class="t-sub">Mahindra University</div></div>
+      </div>
+      <div><span class="t-badge">Ongoing</span></div>
+      <div class="t-dur">2023 – 2027</div>
+     </div>
+
+    <div class="track">
+      <div class="t-num">2</div>
+      <div class="t-info">
+        <div class="t-thumb" style="background:linear-gradient(135deg,#1a1a0d,#3a3a1a)">📚</div>
+        <div class="t-text"><div class="t-name">Intermediate</div><div class="t-sub">FIITJEE</div></div>
+      </div>
+      <div><span class="t-badge gray">Completed</span></div>
+      <div class="t-dur">2021 – 2023</div>
+     </div>
+
+    <div class="track">
+      <div class="t-num">3</div>
+      <div class="t-info">
+        <div class="t-thumb" style="background:linear-gradient(135deg,#1a1a0d,#3a3a1a)">📚</div>
+        <div class="t-text"><div class="t-name">High School</div><div class="t-sub">Delhi Public School</div></div>
+      </div>
+      <div><span class="t-badge gray">Completed</span></div>
+      <div class="t-dur">2021</div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- SKILLS -->
+  <div class="section" id="skills">
+    <div class="sec-header"><div class="sec-title">Skills & Tools</div></div>
+    <div class="skills-grid">
+      <div class="skill-box"><div class="skill-box-title">Languages</div><div class="skill-pills"><span class="spill">Python</span><span class="spill">R</span><span class="spill">SQL</span><span class="spill">JavaScript</span><span class="spill">HTML / CSS</span></div></div>
+      <div class="skill-box"><div class="skill-box-title">Machine Learning & AI</div><div class="skill-pills"><span class="spill">Scikit-learn</span><span class="spill">TensorFlow</span><span class="spill">PyTorch</span><span class="spill">Deep Learning</span><span class="spill">NLP</span><span class="spill">Feature Engineering</span></div></div>
+      <div class="skill-box"><div class="skill-box-title">Data & Visualization</div><div class="skill-pills"><span class="spill">Pandas</span><span class="spill">NumPy</span><span class="spill">Matplotlib</span><span class="spill">Seaborn</span><span class="spill">Tableau</span><span class="spill">Excel</span><span class="spill">Power BI</span></div></div>
+      <div class="skill-box"><div class="skill-box-title">Tools & Platforms</div><div class="skill-pills"><span class="spill">Git / GitHub</span><span class="spill">Jupyter</span><span class="spill">VS Code</span><span class="spill">Google Colab</span><span class="spill">PostgreSQL</span><span class="spill">Statistics</span></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- HOBBIES -->
+  <div class="section" id="hobbies">
+    <div class="sec-header"><div class="sec-title">Hobbies & Extracurriculars</div></div>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+      <div class="hobby-item"><div class="hobby-icon">📊</div><div><div class="hobby-name">Convenor</div><div class="hobby-sub">Airo - Annual Sports Fest · Mahindra University</div></div></div>
+      <div class="hobby-item"><div class="hobby-icon">🏆</div><div><div class="hobby-name">Blockchain Club</div><div class="hobby-sub">Design Head · 2024–25</div></div></div>
+      <div class="hobby-item"><div class="hobby-icon">⚽️</div><div><div class="hobby-name">Football</div><div class="hobby-sub">my entire personality depends on how 11 men play every weekend (visca barça)</div></div></div>
+      <div class="hobby-item"><div class="hobby-icon">🎯</div><div><div class="hobby-name">Designing</div><div class="hobby-sub">i just like making things look cool for no reason at 2am</div></div></div>
+      <div class="hobby-item"><div class="hobby-icon">🌍</div><div><div class="hobby-name">Hobby Name Here</div><div class="hobby-sub">A short line about it</div></div></div>
+      <div class="hobby-item"><div class="hobby-icon">🎵</div><div><div class="hobby-name">Hobby Name Here</div><div class="hobby-sub">A short line about it</div></div></div>
+    </div>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- ABOUT -->
+  <div class="section" id="about" style="padding-bottom:48px;">
+    <div class="sec-header"><div class="sec-title">About Saha</div></div>
+    <div class="about-grid">
+      <div class="about-card">
+        <div class="acard-label">Bio</div>
+        <div class="acard-body">
+          Hi, I'm <strong>Saha</strong> — a Computation & Mathematics student with a passion for turning raw data into meaningful stories.<br><br>
+          I'm on a mission to become a <strong>Data Scientist</strong>, combining my love for <strong>mathematics, machine learning, and statistical thinking</strong> to solve real-world problems.<br><br>
+          Add something personal here — what drives you, what excites you about data science, or what kind of role you're looking for.
+        </div>
+        <div class="stats-row">
+          <div class="stat"><div class="stat-n">5+</div><div class="stat-l">Projects Built</div></div>
+          <div class="stat"><div class="stat-n">8</div><div class="stat-l">Skills Mastered</div></div>
+          <div class="stat"><div class="stat-n">2027</div><div class="stat-l">Graduating</div></div>
+        </div>
+      </div>
+      <div class="about-card">
+        <div class="acard-label">What I'm Looking For</div>
+        <div class="acard-body">
+          Open to <strong>internships</strong>, <strong>research roles</strong>, and <strong>entry-level data science</strong> positions.<br><br>
+          Especially interested in: <strong>add your interests here</strong>.<br><br>
+          <span style="color:var(--green);font-weight:500;">Currently available</span> for summer 2025 internships.
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<!-- SEARCH OVERLAY -->
+<div id="searchOverlay" onclick="if(event.target===this)closeSearch()">
+  <div style="background:#121212;border-radius:12px;width:100%;max-width:560px;overflow:hidden;border:1px solid rgba(255,255,255,0.1);box-shadow:0 24px 64px rgba(0,0,0,0.6);">
+    <div style="display:flex;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid rgba(255,255,255,0.07);">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="#b3b3b3"><path d="M10.533 1.279c-5.18 0-9.407 4.14-9.407 9.279s4.226 9.279 9.407 9.279c2.234 0 4.29-.77 5.907-2.058l4.353 4.353a1 1 0 1 0 1.414-1.414l-4.344-4.344a9.157 9.157 0 0 0 2.077-5.816c0-5.14-4.226-9.28-9.407-9.28zm-7.407 9.279c0-4.006 3.302-7.279 7.407-7.279s7.407 3.273 7.407 7.279-3.302 7.279-7.407 7.279-7.407-3.273-7.407-7.279z"/></svg>
+      <input id="searchInput" type="text" placeholder="Search sections, skills, projects..." oninput="renderResults(this.value)" style="flex:1;background:none;border:none;outline:none;color:#fff;font-family:'Epilogue',sans-serif;font-size:1rem;"/>
+      <button onclick="closeSearch()" style="background:none;border:none;color:#b3b3b3;cursor:pointer;font-size:1.2rem;padding:2px 6px;">✕</button>
+    </div>
+    <div id="searchResults" style="max-height:360px;overflow-y:auto;padding:8px;"></div>
+  </div>
+</div>
+
+<!-- PLAYER -->
+<footer class="player">
+  <div class="pl-info">
+    <div class="pl-thumb">📊</div>
+    <div class="pl-track"><div class="pl-title">Sahasri Gundapuneedi</div><div class="pl-artist">Aspiring Data Scientist · Open to work</div></div>
+    <button class="pl-heart"><svg viewBox="0 0 24 24"><path d="M12 21.593c-.525-.467-4.203-3.766-6-5.693C4 13.9 3.5 12.5 3.5 11c0-2.76 2.24-5 5-5 1.38 0 2.74.56 3.72 1.54l-.22.22-.22-.22C12.76 6.56 14.12 6 15.5 6c2.76 0 5 2.24 5 5 0 1.5-.5 2.9-2.5 4.9-1.797 1.927-5.475 5.226-6 5.693z"/></svg></button>
+  </div>
+  <div class="pl-controls">
+    <div class="pl-btns">
+      <button class="pl-btn"><svg viewBox="0 0 24 24"><path d="M13.151.922a.75.75 0 1 0-1.06 1.06L13.109 3H11.16a3.75 3.75 0 0 0-2.873 1.34l-6.173 7.356A1.25 1.25 0 0 0 3.07 13.5H1.5a.75.75 0 0 0 0 1.5h1.742l.37.44A3.75 3.75 0 0 0 6.486 16.5H7.5v2.25a.75.75 0 0 0 1.5 0V16.5h6v2.25a.75.75 0 0 0 1.5 0V16.5h1.015a3.75 3.75 0 0 0 2.873-1.34l.37-.44H22.5a.75.75 0 0 0 0-1.5h-1.57a1.25 1.25 0 0 0 .956-2.022l-6.173-7.356A3.75 3.75 0 0 0 12.84 3H10.89l1.018-1.017a.75.75 0 1 0-1.06-1.06l-1.998 1.997-.003.003 2.304 2.303z"/></svg></button>
+      <button class="pl-btn"><svg viewBox="0 0 24 24"><path d="M3.3 1.252A.75.75 0 0 0 2 1.96V22.04a.75.75 0 0 0 1.3.508l14.5-10.04a.75.75 0 0 0 0-1.016L3.3 1.252zm1.2 19.535V3.213L16.5 12l-12 8.787z"/></svg></button>
+      <button class="pl-play"><svg viewBox="0 0 24 24"><path d="M5.7 3a.7.7 0 0 0-.7.7v16.6a.7.7 0 0 0 .7.7h2.6a.7.7 0 0 0 .7-.7V3.7a.7.7 0 0 0-.7-.7H5.7zm10 0a.7.7 0 0 0-.7.7v16.6a.7.7 0 0 0 .7.7h2.6a.7.7 0 0 0 .7-.7V3.7a.7.7 0 0 0-.7-.7h-2.6z"/></svg></button>
+      <button class="pl-btn"><svg viewBox="0 0 24 24"><path d="M20.7 22.04a.75.75 0 0 0 1.3-.508V1.96a.75.75 0 0 0-1.3-.508L6.2 11.492a.75.75 0 0 0 0 1.016L20.7 22.04zM19.5 3.213V20.787L7.5 12l12-8.787z"/></svg></button>
+      <button class="pl-btn"><svg viewBox="0 0 24 24"><path d="M17.676 3.316a.75.75 0 0 0-.353 1.455 6.75 6.75 0 0 1 0 13.458.75.75 0 0 0 .353 1.455 8.25 8.25 0 0 0 0-16.368z"/><path d="M14.424 5.776a.75.75 0 0 0-.353 1.454 4.25 4.25 0 0 1 0 8.54.75.75 0 0 0 .353 1.454 5.75 5.75 0 0 0 0-11.448z"/><path d="M11.172 8.236a.75.75 0 0 0-.353 1.454 1.75 1.75 0 0 1 0 3.62.75.75 0 0 0 .353 1.454 3.25 3.25 0 0 0 0-6.528z"/><rect x="2" y="3" width="1.5" height="18" rx=".75"/></svg></button>
+    </div>
+    <div class="pl-bar">
+      <span class="pl-time">0:00</span>
+      <div class="pl-track-bar"><div class="pl-fill"></div><div class="pl-dot"></div></div>
+      <span class="pl-time">∞</span>
+    </div>
+  </div>
+  <div class="pl-extra">
+    <div class="vol">
+      <button class="pl-btn"><svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 3.75a.75.75 0 0 0-1.255-.552L5.44 8H2.75A1.75 1.75 0 0 0 1 9.75v4.5c0 .966.784 1.75 1.75 1.75H5.44l5.305 4.802A.75.75 0 0 0 12 20.25V3.75zm7.435 1.89a.75.75 0 1 0-1.06 1.06A6.75 6.75 0 0 1 20.63 12a6.75 6.75 0 0 1-2.255 5.056.75.75 0 0 0 .995 1.123A8.25 8.25 0 0 0 22.13 12a8.25 8.25 0 0 0-2.695-6.36z"/><path d="M16.434 5.6a.75.75 0 0 0-1.06 1.062A4.25 4.25 0 0 1 16.63 12a4.25 4.25 0 0 1-1.256 3.338.75.75 0 0 0 1.06 1.06A5.75 5.75 0 0 0 18.13 12a5.75 5.75 0 0 0-1.696-4.4z"/></svg></button>
+      <div class="vol-bar"><div class="vol-fill"></div></div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  function toggleDropdown() {
+    const d = document.getElementById('dotsDropdown');
+    d.style.display = d.style.display === 'block' ? 'none' : 'block';
+  }
+  function closeDropdown() {
+    document.getElementById('dotsDropdown').style.display = 'none';
+  }
+  document.addEventListener('click', e => {
+    if (!document.getElementById('dotsBtn').contains(e.target)) closeDropdown();
+  });
+
+  const sections = [
+    { id:'work',      label:'Work Experience',            emoji:'💼', sub:'Internships & jobs' },
+    { id:'projects',  label:'Projects',                   emoji:'📊', sub:'Built by Saha' },
+    { id:'education', label:'Education',                  emoji:'🎓', sub:'Comp & Mathematics' },
+    { id:'skills',    label:'Skills & Tools',             emoji:'⚡', sub:'Python, ML, SQL...' },
+    { id:'hobbies',   label:'Hobbies & Extracurriculars', emoji:'🎯', sub:'Beyond the code' },
+    { id:'about',     label:'About Saha',                 emoji:'👤', sub:'Bio & background' },
+    { id:'hero',      label:'Home',                       emoji:'🏠', sub:'Back to top' },
+  ];
+
+  function openSearch() {
+    document.getElementById('searchOverlay').classList.add('open');
+    setTimeout(() => document.getElementById('searchInput').focus(), 50);
+    renderResults('');
+  }
+  function closeSearch() {
+    document.getElementById('searchOverlay').classList.remove('open');
+    document.getElementById('searchInput').value = '';
+  }
+  function renderResults(q) {
+    const list = document.getElementById('searchResults');
+    const filtered = q.trim() === '' ? sections : sections.filter(s => s.label.toLowerCase().includes(q.toLowerCase()) || s.sub.toLowerCase().includes(q.toLowerCase()));
+    list.innerHTML = filtered.map(s => `<div class="sr-item" onclick="closeSearch();goTo('${s.id}')"><div class="sr-thumb">${s.emoji}</div><div><div class="sr-name">${s.label}</div><div class="sr-sub">${s.sub}</div></div></div>`).join('') || '<div style="color:var(--text-muted);padding:16px;font-size:0.85rem;">No results found</div>';
+  }
+  document.addEventListener('keydown', e => { if (e.key === 'Escape') closeSearch(); });
+
+  function goTo(id) {
+    const el = document.getElementById(id);
+    if (el) document.getElementById('mainScroll').scrollTo({ top: el.offsetTop - 64, behavior: 'smooth' });
+  }
+
+  const scroll = document.getElementById('mainScroll');
+  const topbar = document.getElementById('topbar');
+  scroll.addEventListener('scroll', () => { topbar.classList.toggle('scrolled', scroll.scrollTop > 60); });
+
+  const io = new IntersectionObserver((entries) => {
+    entries.forEach((e, i) => {
+      if (e.isIntersecting) { e.target.style.animation = `fadeUp 0.4s ${(i % 5) * 0.06}s ease both`; io.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  document.querySelectorAll('.track, .card, .skill-box, .hobby-item, .about-card').forEach(el => io.observe(el));
+</script>
+</body>
+</html>
