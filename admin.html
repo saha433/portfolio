@@ -1,0 +1,585 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Saha — Admin Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@700;800&family=Epilogue:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #1DB954;
+    --green-dim: rgba(29,185,84,0.15);
+    --bg: #121212;
+    --bg-elevated: #1a1a1a;
+    --bg-card: #242424;
+    --text: #fff;
+    --text-secondary: #b3b3b3;
+    --text-muted: #535353;
+    --red: #e8424a;
+  }
+  * { margin:0; padding:0; box-sizing:border-box; }
+  body { background:var(--bg); color:var(--text); font-family:'Epilogue',sans-serif; min-height:100vh; }
+
+  /* ── LOGIN ── */
+  #loginScreen {
+    position:fixed; inset:0; background:var(--bg);
+    display:flex; align-items:center; justify-content:center; z-index:999;
+  }
+  .login-box {
+    background:var(--bg-card); border-radius:16px; padding:40px;
+    width:360px; border:1px solid rgba(255,255,255,0.08);
+    box-shadow:0 24px 64px rgba(0,0,0,0.6);
+  }
+  .login-logo { display:flex; align-items:center; gap:10px; margin-bottom:28px; }
+  .login-logo svg { width:28px; height:28px; fill:var(--green); }
+  .login-logo span { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; }
+  .login-title { font-family:'Syne',sans-serif; font-size:1.4rem; font-weight:700; margin-bottom:6px; }
+  .login-sub { font-size:0.83rem; color:var(--text-secondary); margin-bottom:24px; }
+  .field-label { font-size:0.72rem; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-muted); margin-bottom:6px; display:block; }
+  .field-input {
+    width:100%; background:var(--bg-elevated); border:1px solid rgba(255,255,255,0.1);
+    border-radius:8px; padding:10px 14px; color:var(--text);
+    font-family:'Epilogue',sans-serif; font-size:0.9rem; outline:none;
+    transition:border-color 0.15s;
+  }
+  .field-input:focus { border-color:var(--green); }
+  .login-err { font-size:0.8rem; color:var(--red); margin-top:8px; display:none; }
+  .btn-green {
+    width:100%; margin-top:20px; padding:11px;
+    background:var(--green); border:none; border-radius:8px;
+    color:#000; font-family:'Epilogue',sans-serif; font-weight:700;
+    font-size:0.9rem; cursor:pointer; transition:all 0.15s;
+  }
+  .btn-green:hover { background:#1ed760; }
+
+  /* ── DASHBOARD ── */
+  #dashboard { display:none; }
+
+  .topbar {
+    background:#000; padding:16px 32px;
+    display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid rgba(255,255,255,0.07); position:sticky; top:0; z-index:50;
+  }
+  .topbar-left { display:flex; align-items:center; gap:12px; }
+  .topbar-left svg { width:26px; height:26px; fill:var(--green); }
+  .topbar-title { font-family:'Syne',sans-serif; font-weight:800; font-size:1rem; }
+  .topbar-sub { font-size:0.75rem; color:var(--text-secondary); margin-left:4px; }
+  .topbar-right { display:flex; gap:10px; align-items:center; }
+
+  .btn-outline {
+    padding:7px 16px; background:transparent; border:1px solid rgba(255,255,255,0.2);
+    border-radius:8px; color:var(--text); font-family:'Epilogue',sans-serif;
+    font-size:0.8rem; font-weight:500; cursor:pointer; transition:all 0.15s;
+    text-decoration:none; display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn-outline:hover { border-color:#fff; }
+  .btn-save {
+    padding:7px 18px; background:var(--green); border:none;
+    border-radius:8px; color:#000; font-family:'Epilogue',sans-serif;
+    font-size:0.8rem; font-weight:700; cursor:pointer; transition:all 0.15s;
+    display:inline-flex; align-items:center; gap:6px;
+  }
+  .btn-save:hover { background:#1ed760; }
+
+  .content { padding:32px; max-width:1000px; margin:0 auto; }
+
+  .save-banner {
+    background:rgba(29,185,84,0.12); border:1px solid rgba(29,185,84,0.3);
+    border-radius:8px; padding:10px 16px; font-size:0.83rem;
+    color:var(--green); margin-bottom:24px; display:none;
+    align-items:center; gap:8px;
+  }
+
+  /* ── SECTION CARD ── */
+  .sec-card {
+    background:var(--bg-elevated); border-radius:12px;
+    border:1px solid rgba(255,255,255,0.07); margin-bottom:24px; overflow:hidden;
+  }
+  .sec-card-header {
+    padding:16px 20px; display:flex; align-items:center; justify-content:space-between;
+    border-bottom:1px solid rgba(255,255,255,0.06); cursor:pointer;
+    transition:background 0.15s;
+  }
+  .sec-card-header:hover { background:rgba(255,255,255,0.03); }
+  .sec-card-title { font-family:'Syne',sans-serif; font-size:0.95rem; font-weight:700; display:flex; align-items:center; gap:10px; }
+  .sec-card-title span { font-family:'Epilogue',sans-serif; font-size:0.72rem; font-weight:400; color:var(--text-secondary); }
+  .sec-chevron { transition:transform 0.2s; font-size:0.8rem; color:var(--text-muted); }
+  .sec-card-body { padding:20px; display:none; }
+  .sec-card.open .sec-card-body { display:block; }
+  .sec-card.open .sec-chevron { transform:rotate(180deg); }
+
+  /* ── ENTRIES ── */
+  .entry {
+    background:var(--bg-card); border-radius:10px; padding:16px;
+    margin-bottom:12px; border:1px solid rgba(255,255,255,0.06);
+    position:relative;
+  }
+  .entry-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; }
+  .entry-full { grid-column:1/-1; }
+  .entry-del {
+    position:absolute; top:12px; right:12px;
+    background:rgba(232,66,74,0.12); border:1px solid rgba(232,66,74,0.2);
+    border-radius:6px; padding:4px 10px; color:var(--red);
+    font-size:0.72rem; font-weight:600; cursor:pointer; transition:all 0.15s;
+  }
+  .entry-del:hover { background:rgba(232,66,74,0.25); }
+
+  .fl { display:flex; flex-direction:column; gap:5px; }
+  .fl label { font-size:0.68rem; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:var(--text-muted); }
+  .fi {
+    background:var(--bg-elevated); border:1px solid rgba(255,255,255,0.08);
+    border-radius:6px; padding:8px 12px; color:var(--text);
+    font-family:'Epilogue',sans-serif; font-size:0.83rem; outline:none;
+    transition:border-color 0.15s; width:100%;
+  }
+  .fi:focus { border-color:var(--green); }
+  textarea.fi { resize:vertical; min-height:70px; }
+
+  .add-btn {
+    width:100%; padding:10px; margin-top:4px;
+    background:rgba(29,185,84,0.08); border:1px dashed rgba(29,185,84,0.3);
+    border-radius:8px; color:var(--green); font-family:'Epilogue',sans-serif;
+    font-size:0.82rem; font-weight:600; cursor:pointer; transition:all 0.15s;
+  }
+  .add-btn:hover { background:rgba(29,185,84,0.15); }
+
+  .tag-input-row { display:flex; gap:6px; flex-wrap:wrap; margin-top:4px; }
+  .tag-chip {
+    background:rgba(29,185,84,0.1); border:1px solid rgba(29,185,84,0.25);
+    color:var(--green); border-radius:30px; padding:3px 10px;
+    font-size:0.72rem; font-weight:600; display:flex; align-items:center; gap:5px;
+  }
+  .tag-chip button { background:none; border:none; color:var(--green); cursor:pointer; font-size:0.9rem; line-height:1; }
+  .tag-add-input {
+    background:var(--bg-elevated); border:1px solid rgba(255,255,255,0.08);
+    border-radius:6px; padding:4px 10px; color:var(--text);
+    font-family:'Epilogue',sans-serif; font-size:0.75rem; outline:none; width:100px;
+  }
+  .tag-add-input:focus { border-color:var(--green); }
+
+  .logout-btn {
+    background:none; border:none; color:var(--text-secondary);
+    font-family:'Epilogue',sans-serif; font-size:0.8rem; cursor:pointer;
+    transition:color 0.15s;
+  }
+  .logout-btn:hover { color:var(--red); }
+</style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="loginScreen">
+  <div class="login-box">
+    <div class="login-logo">
+      <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      <span>saha's portfolio</span>
+    </div>
+    <div class="login-title">Admin Dashboard</div>
+    <div class="login-sub">Enter your password to manage your portfolio</div>
+    <label class="field-label" for="pwInput">Password</label>
+    <input class="field-input" type="password" id="pwInput" placeholder="Enter password" onkeydown="if(event.key==='Enter')login()">
+    <div class="login-err" id="loginErr">❌ Wrong password. Try again.</div>
+    <button class="btn-green" onclick="login()">Sign In</button>
+  </div>
+</div>
+
+<!-- DASHBOARD -->
+<div id="dashboard">
+  <div class="topbar">
+    <div class="topbar-left">
+      <svg viewBox="0 0 24 24"><path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z"/></svg>
+      <div>
+        <span class="topbar-title">Admin Dashboard</span>
+        <span class="topbar-sub">— saha's portfolio</span>
+      </div>
+    </div>
+    <div class="topbar-right">
+      <a href="index.html" target="_blank" class="btn-outline">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 14H9V8h2v8zm4 0h-2V8h2v8z"/></svg>
+        View Site
+      </a>
+      <button class="btn-save" onclick="saveAll()">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="currentColor"><path d="M17 3H5a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2V7l-4-4zm-5 16a3 3 0 1 1 0-6 3 3 0 0 1 0 6zm3-10H5V5h10v4z"/></svg>
+        Save All
+      </button>
+      <button class="logout-btn" onclick="logout()">Log out</button>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="save-banner" id="saveBanner">✅ Changes saved! Refresh your portfolio to see them.</div>
+
+    <!-- PROJECTS -->
+    <div class="sec-card open" id="sec-projects">
+      <div class="sec-card-header" onclick="toggleSec('projects')">
+        <div class="sec-card-title">📊 Projects <span id="proj-count"></span></div>
+        <div class="sec-chevron">▼</div>
+      </div>
+      <div class="sec-card-body">
+        <div id="projects-list"></div>
+        <button class="add-btn" onclick="addProject()">+ Add Project</button>
+      </div>
+    </div>
+
+    <!-- WORK EXPERIENCE -->
+    <div class="sec-card" id="sec-work">
+      <div class="sec-card-header" onclick="toggleSec('work')">
+        <div class="sec-card-title">💼 Work Experience <span id="work-count"></span></div>
+        <div class="sec-chevron">▼</div>
+      </div>
+      <div class="sec-card-body">
+        <div id="work-list"></div>
+        <button class="add-btn" onclick="addWork()">+ Add Role</button>
+      </div>
+    </div>
+
+    <!-- EDUCATION -->
+    <div class="sec-card" id="sec-education">
+      <div class="sec-card-header" onclick="toggleSec('education')">
+        <div class="sec-card-title">🎓 Education <span id="edu-count"></span></div>
+        <div class="sec-chevron">▼</div>
+      </div>
+      <div class="sec-card-body">
+        <div id="education-list"></div>
+        <button class="add-btn" onclick="addEdu()">+ Add Education</button>
+      </div>
+    </div>
+
+    <!-- HOBBIES -->
+    <div class="sec-card" id="sec-hobbies">
+      <div class="sec-card-header" onclick="toggleSec('hobbies')">
+        <div class="sec-card-title">🎯 Hobbies & Extracurriculars <span id="hobby-count"></span></div>
+        <div class="sec-chevron">▼</div>
+      </div>
+      <div class="sec-card-body">
+        <div id="hobbies-list"></div>
+        <button class="add-btn" onclick="addHobby()">+ Add Hobby</button>
+      </div>
+    </div>
+
+    <!-- ABOUT -->
+    <div class="sec-card" id="sec-about">
+      <div class="sec-card-header" onclick="toggleSec('about')">
+        <div class="sec-card-title">👤 About & Bio</div>
+        <div class="sec-chevron">▼</div>
+      </div>
+      <div class="sec-card-body">
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;">
+          <div class="fl entry-full">
+            <label>Bio Text</label>
+            <textarea class="fi" id="about-bio" rows="5"></textarea>
+          </div>
+          <div class="fl">
+            <label>Looking For</label>
+            <textarea class="fi" id="about-looking" rows="4"></textarea>
+          </div>
+          <div class="fl">
+            <label>Status (shown in green)</label>
+            <input class="fi" id="about-status" type="text" placeholder="e.g. Currently available for summer 2026 internships">
+          </div>
+          <div class="fl">
+            <label>Stat 1 — Number</label>
+            <input class="fi" id="stat1-n" type="text" placeholder="e.g. 10+">
+          </div>
+          <div class="fl">
+            <label>Stat 1 — Label</label>
+            <input class="fi" id="stat1-l" type="text" placeholder="e.g. Projects Built">
+          </div>
+          <div class="fl">
+            <label>Stat 2 — Number</label>
+            <input class="fi" id="stat2-n" type="text" placeholder="e.g. 2027">
+          </div>
+          <div class="fl">
+            <label>Stat 2 — Label</label>
+            <input class="fi" id="stat2-l" type="text" placeholder="e.g. Graduating">
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script>
+// ── CHANGE THIS PASSWORD ──
+const ADMIN_PASSWORD = 'saha2025';
+
+// ── AUTH ──
+function login() {
+  const pw = document.getElementById('pwInput').value;
+  if (pw === ADMIN_PASSWORD) {
+    sessionStorage.setItem('admin_auth', '1');
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('dashboard').style.display = 'block';
+    loadAll();
+  } else {
+    document.getElementById('loginErr').style.display = 'block';
+  }
+}
+
+function logout() {
+  sessionStorage.removeItem('admin_auth');
+  location.reload();
+}
+
+if (sessionStorage.getItem('admin_auth') === '1') {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+}
+
+// ── TOGGLE SECTIONS ──
+function toggleSec(id) {
+  document.getElementById('sec-' + id).classList.toggle('open');
+}
+
+// ── DEFAULT DATA ──
+const DEFAULTS = {
+  projects: [
+    { title:'The Anatomy of a Hit', desc:'An interactive data visualization project analyzing Netflix content to uncover patterns in genres, release trends, and audience preferences.', tags:['Python','HTML','D3.js'], link:'https://net-aoah-flix.netlify.app', image:'images/1.png' },
+    { title:'Chronos', desc:'An AI-driven application that translates slang and unclear text into meaningful English and provides contextual insights.', tags:['Python','HTML'], link:'https://github.com/saha433/chronos', image:'images/2.png' },
+    { title:'Decentralized Peer-to-Peer Lending', desc:'A blockchain-based peer-to-peer lending and borrowing system that eliminates the need for intermediaries.', tags:['Solidity','Web3.js','HTML'], link:'https://github.com/saha433/web3-build-a-thon', image:'images/3.png' },
+  ],
+  work: [
+    { role:'Data and Business Analytics Intern', company:'Royal Enfield', type:'Internship', duration:'June – Aug 2025', desc:'Worked as a Data & Business Analytics Intern at Royal Enfield. Add a short description of what you did, tools you used, and impact you made.' },
+  ],
+  education: [
+    { degree:'B. Tech in Computation & Mathematics', school:'Mahindra University', type:'Ongoing', duration:'2023 – 2027', desc:'B.Tech in Computation & Mathematics at Mahindra University, Hyderabad.' },
+    { degree:'Secondary Higher Education', school:'FIITJEE', type:'Completed', duration:'2021 – 2023', desc:'Completed Intermediate at FIITJEE.' },
+    { degree:'Higher Education', school:'Delhi Public School', type:'Completed', duration:'2021', desc:'Completed Class 10 at Delhi Public School.' },
+  ],
+  hobbies: [
+    { icon:'📊', name:'Convenor', sub:'Airo - Annual Sports Fest · Mahindra University' },
+    { icon:'🏆', name:'Blockchain Club', sub:'Design Head · 2024–25' },
+    { icon:'⚽️', name:'Football', sub:'my entire personality depends on how 11 men play every weekend (visca barça)' },
+    { icon:'🎯', name:'Designing', sub:'i just like making things look cool for no reason at 2am' },
+  ],
+  about: {
+    bio: "Hi, I'm Saha — a Computation & Mathematics student with a disgusting love for math and looking for turning raw data into meaningful stories.\n\nI'm on a mission to become a Data Scientist, combining my love for mathematics, machine learning, and statistical thinking to solve real-world problems.\n\nWhen I'm not buried in data, you can find me obsessing over football, designing random stuff, or just binge watching How I Met Your Mother for the 10th time.",
+    looking: "Open to internships, research roles, and entry-level data science positions.",
+    status: "Currently available for summer 2026 internships.",
+    stat1n: '10+', stat1l: 'Projects Built',
+    stat2n: '2027', stat2l: 'Graduating',
+  }
+};
+
+function getData(key) {
+  const raw = localStorage.getItem('portfolio_' + key);
+  return raw ? JSON.parse(raw) : DEFAULTS[key];
+}
+
+function setData(key, val) {
+  localStorage.setItem('portfolio_' + key, JSON.stringify(val));
+}
+
+// ── RENDER PROJECTS ──
+function renderProjects() {
+  const data = getData('projects');
+  document.getElementById('proj-count').textContent = `(${data.length})`;
+  document.getElementById('projects-list').innerHTML = data.map((p, i) => `
+    <div class="entry" id="proj-${i}">
+      <button class="entry-del" onclick="delItem('projects',${i})">✕ Remove</button>
+      <div class="entry-grid">
+        <div class="fl"><label>Project Title</label><input class="fi" data-proj="${i}" data-f="title" value="${esc(p.title)}"></div>
+        <div class="fl"><label>Link / URL</label><input class="fi" data-proj="${i}" data-f="link" value="${esc(p.link||'')}"></div>
+        <div class="fl entry-full"><label>Description</label><textarea class="fi" data-proj="${i}" data-f="desc">${esc(p.desc)}</textarea></div>
+        <div class="fl"><label>Image path (e.g. images/1.png)</label><input class="fi" data-proj="${i}" data-f="image" value="${esc(p.image||'')}"></div>
+        <div class="fl">
+          <label>Tags</label>
+          <div class="tag-input-row" id="proj-tags-${i}">
+            ${p.tags.map((t,ti) => `<span class="tag-chip">${t}<button onclick="removeTag('projects',${i},${ti})">×</button></span>`).join('')}
+            <input class="tag-add-input" placeholder="Add tag..." onkeydown="if(event.key==='Enter'){addTag('projects',${i},this.value);this.value='';}">
+          </div>
+        </div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── RENDER WORK ──
+function renderWork() {
+  const data = getData('work');
+  document.getElementById('work-count').textContent = `(${data.length})`;
+  document.getElementById('work-list').innerHTML = data.map((w, i) => `
+    <div class="entry">
+      <button class="entry-del" onclick="delItem('work',${i})">✕ Remove</button>
+      <div class="entry-grid">
+        <div class="fl"><label>Role / Title</label><input class="fi" data-work="${i}" data-f="role" value="${esc(w.role)}"></div>
+        <div class="fl"><label>Company</label><input class="fi" data-work="${i}" data-f="company" value="${esc(w.company)}"></div>
+        <div class="fl"><label>Type (e.g. Internship)</label><input class="fi" data-work="${i}" data-f="type" value="${esc(w.type)}"></div>
+        <div class="fl"><label>Duration</label><input class="fi" data-work="${i}" data-f="duration" value="${esc(w.duration)}"></div>
+        <div class="fl entry-full"><label>Hover Description</label><textarea class="fi" data-work="${i}" data-f="desc">${esc(w.desc)}</textarea></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── RENDER EDUCATION ──
+function renderEdu() {
+  const data = getData('education');
+  document.getElementById('edu-count').textContent = `(${data.length})`;
+  document.getElementById('education-list').innerHTML = data.map((e, i) => `
+    <div class="entry">
+      <button class="entry-del" onclick="delItem('education',${i})">✕ Remove</button>
+      <div class="entry-grid">
+        <div class="fl"><label>Degree / Course</label><input class="fi" data-edu="${i}" data-f="degree" value="${esc(e.degree)}"></div>
+        <div class="fl"><label>School / Institution</label><input class="fi" data-edu="${i}" data-f="school" value="${esc(e.school)}"></div>
+        <div class="fl"><label>Type (Ongoing / Completed)</label><input class="fi" data-edu="${i}" data-f="type" value="${esc(e.type)}"></div>
+        <div class="fl"><label>Year / Duration</label><input class="fi" data-edu="${i}" data-f="duration" value="${esc(e.duration)}"></div>
+        <div class="fl entry-full"><label>Hover Description</label><textarea class="fi" data-edu="${i}" data-f="desc">${esc(e.desc)}</textarea></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── RENDER HOBBIES ──
+function renderHobbies() {
+  const data = getData('hobbies');
+  document.getElementById('hobby-count').textContent = `(${data.length})`;
+  document.getElementById('hobbies-list').innerHTML = data.map((h, i) => `
+    <div class="entry">
+      <button class="entry-del" onclick="delItem('hobbies',${i})">✕ Remove</button>
+      <div class="entry-grid">
+        <div class="fl"><label>Icon (emoji)</label><input class="fi" data-hobby="${i}" data-f="icon" value="${esc(h.icon)}"></div>
+        <div class="fl"><label>Name</label><input class="fi" data-hobby="${i}" data-f="name" value="${esc(h.name)}"></div>
+        <div class="fl entry-full"><label>Subtitle</label><input class="fi" data-hobby="${i}" data-f="sub" value="${esc(h.sub)}"></div>
+      </div>
+    </div>
+  `).join('');
+}
+
+// ── RENDER ABOUT ──
+function renderAbout() {
+  const d = getData('about');
+  document.getElementById('about-bio').value = d.bio;
+  document.getElementById('about-looking').value = d.looking;
+  document.getElementById('about-status').value = d.status;
+  document.getElementById('stat1-n').value = d.stat1n;
+  document.getElementById('stat1-l').value = d.stat1l;
+  document.getElementById('stat2-n').value = d.stat2n;
+  document.getElementById('stat2-l').value = d.stat2l;
+}
+
+function loadAll() {
+  renderProjects(); renderWork(); renderEdu(); renderHobbies(); renderAbout();
+}
+
+// ── COLLECT + SAVE ──
+function collectProjects() {
+  const data = getData('projects');
+  document.querySelectorAll('[data-proj]').forEach(el => {
+    data[el.dataset.proj][el.dataset.f] = el.value;
+  });
+  return data;
+}
+
+function collectWork() {
+  const data = getData('work');
+  document.querySelectorAll('[data-work]').forEach(el => {
+    data[el.dataset.work][el.dataset.f] = el.value;
+  });
+  return data;
+}
+
+function collectEdu() {
+  const data = getData('education');
+  document.querySelectorAll('[data-edu]').forEach(el => {
+    data[el.dataset.edu][el.dataset.f] = el.value;
+  });
+  return data;
+}
+
+function collectHobbies() {
+  const data = getData('hobbies');
+  document.querySelectorAll('[data-hobby]').forEach(el => {
+    data[el.dataset.hobby][el.dataset.f] = el.value;
+  });
+  return data;
+}
+
+function collectAbout() {
+  return {
+    bio: document.getElementById('about-bio').value,
+    looking: document.getElementById('about-looking').value,
+    status: document.getElementById('about-status').value,
+    stat1n: document.getElementById('stat1-n').value,
+    stat1l: document.getElementById('stat1-l').value,
+    stat2n: document.getElementById('stat2-n').value,
+    stat2l: document.getElementById('stat2-l').value,
+  };
+}
+
+function saveAll() {
+  setData('projects', collectProjects());
+  setData('work', collectWork());
+  setData('education', collectEdu());
+  setData('hobbies', collectHobbies());
+  setData('about', collectAbout());
+  const b = document.getElementById('saveBanner');
+  b.style.display = 'flex';
+  setTimeout(() => b.style.display = 'none', 4000);
+}
+
+// ── ADD / DELETE ──
+function addProject() {
+  const data = getData('projects');
+  data.push({ title:'New Project', desc:'Description here.', tags:[], link:'', image:'' });
+  setData('projects', data); renderProjects();
+}
+
+function addWork() {
+  const data = getData('work');
+  data.push({ role:'Role Title', company:'Company', type:'Internship', duration:'2025', desc:'Description here.' });
+  setData('work', data); renderWork();
+}
+
+function addEdu() {
+  const data = getData('education');
+  data.push({ degree:'Degree Name', school:'Institution', type:'Ongoing', duration:'2025', desc:'Description here.' });
+  setData('education', data); renderEdu();
+}
+
+function addHobby() {
+  const data = getData('hobbies');
+  data.push({ icon:'🎯', name:'Hobby Name', sub:'Short description' });
+  setData('hobbies', data); renderHobbies();
+}
+
+function delItem(key, i) {
+  if (!confirm('Remove this item?')) return;
+  const data = getData(key);
+  data.splice(i, 1);
+  setData(key, data);
+  if (key==='projects') renderProjects();
+  else if (key==='work') renderWork();
+  else if (key==='education') renderEdu();
+  else if (key==='hobbies') renderHobbies();
+}
+
+function addTag(key, i, val) {
+  if (!val.trim()) return;
+  const data = getData(key);
+  data[i].tags.push(val.trim());
+  setData(key, data);
+  if (key==='projects') renderProjects();
+}
+
+function removeTag(key, i, ti) {
+  const data = getData(key);
+  data[i].tags.splice(ti, 1);
+  setData(key, data);
+  if (key==='projects') renderProjects();
+}
+
+function esc(s) {
+  return String(s||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+// Check auth on load
+if (sessionStorage.getItem('admin_auth') === '1') {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('dashboard').style.display = 'block';
+  loadAll();
+}
+</script>
+</body>
+</html>
